@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katalog Digital Premium - DKH SHOP MARKET</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            transition: background-color 0.5s ease, color 0.5s ease; 
+        }
+
+        .glass {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-6px);
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        
+        .social-btn {
+            transition: all 0.3s ease;
+        }
+        .social-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-200 min-h-screen relative flex flex-col">
+
+    <!-- Animasi Salju -->
+    <canvas id="snowCanvas" class="fixed inset-0 pointer-events-none -z-10"></canvas>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 glass bg-white/40 dark:bg-slate-900/60 border-b border-white/50 dark:border-slate-700/50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
+                        <i class="fa-solid fa-bag-shopping text-xl"></i>
+                    </div>
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                        DKH SHOP <span class="text-indigo-600 dark:text-indigo-400">MARKET</span>
+                    </h1>
+                </div>
+
+                <button id="themeToggle" class="p-2.5 rounded-full bg-white/60 dark:bg-slate-800/60 border border-white/50 dark:border-slate-700/50 text-slate-700 dark:text-yellow-400 hover:scale-110 transition-transform shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <i id="iconSun" class="fa-solid fa-sun hidden"></i>
+                    <i id="iconMoon" class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 flex-grow w-full">
+        
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight drop-shadow-sm">
+                Pusat Layanan Premium
+            </h2>
+            <p class="text-base md:text-lg text-slate-700 dark:text-slate-300 mb-8 font-medium">
+                Solusi cerdas untuk kalian yang cari harga murah, cepat, & bergaransi.
+            </p>
+            
+            <!-- Tombol Order -->
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-4xl mx-auto">
+                <a href="https://chat.whatsapp.com/Jw8BBhN6N7V1VrR5DXyVd4" class="w-full sm:w-auto flex flex-1 items-center justify-center gap-2 px-5 py-3 rounded-xl border border-green-300 dark:border-green-700/50 bg-green-100/80 dark:bg-green-900/40 text-green-700 dark:text-green-300 font-semibold hover:bg-green-200 dark:hover:bg-green-800/60 shadow-sm glass transition-all">
+                    <i class="fa-brands fa-whatsapp text-xl"></i>
+                    <span class="text-sm md:text-base">Order via grup whatsapp</span>
+                </a>
+
+                <a href="http://telegram.me/dkhshoporder_bot" class="w-full sm:w-auto flex flex-1 items-center justify-center gap-2 px-5 py-3 rounded-xl border border-blue-300 dark:border-blue-700/50 bg-blue-100/80 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold hover:bg-blue-200 dark:hover:bg-blue-800/60 shadow-sm glass transition-all">
+                    <i class="fa-solid fa-robot text-xl"></i>
+                    <span class="text-sm md:text-base">Order via bot autoorder</span>
+                </a>
+
+                <a href="https://wa.me/+6285693436052" class="w-full sm:w-auto flex flex-1 items-center justify-center gap-2 px-5 py-3 rounded-xl border border-pink-300 dark:border-pink-700/50 bg-pink-100/80 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 font-semibold hover:bg-pink-200 dark:hover:bg-pink-800/60 shadow-sm glass transition-all">
+                    <i class="fa-solid fa-user-headset text-xl"></i>
+                    <span class="text-sm md:text-base">Order manual ke admin</span>
+                </a>
+            </div>
+        </div>
+
+        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
+            <!-- Kartu produk diinjeksi via JavaScript -->
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative border-t border-white/40 dark:border-slate-800/60 mt-12 glass bg-white/30 dark:bg-slate-900/40 overflow-hidden">
+        <div class="max-w-4xl mx-auto px-4 py-12 md:py-16 flex flex-col items-center text-center relative z-20">
+            
+            <div class="flex items-center gap-6 mb-10">
+                <a href="https://www.instagram.com/hannzx125?stkn=MTBtb3QzZG56eWVldg%3D%3D&utm_source=qr" class="social-btn w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/30 text-2xl">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+                <a href="https://www.tiktok.com/@ryhan.dkh?_r=1&_t=ZS-99tU9xFHvnA" class="social-btn w-12 h-12 flex items-center justify-center rounded-full bg-black text-white shadow-lg shadow-slate-900/30 text-2xl border border-white/20 dark:border-slate-700">
+                    <i class="fa-brands fa-tiktok"></i>
+                </a>
+                <a href="https://www.facebook.com/share/1933opZyod/?mibextid=wwXIfr" class="social-btn w-12 h-12 flex items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/30 text-2xl">
+                    <i class="fa-brands fa-facebook-f"></i>
+                </a>
+            </div>
+
+            <hr class="w-1/2 border-slate-300/50 dark:border-slate-700/50 mb-8">
+
+            <h3 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-6 uppercase tracking-wider">
+                INFORMASI DKH SHOP
+            </h3>
+            
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 w-full max-w-md mx-auto relative z-20">
+                <a href="https://whatsapp.com/channel/0029VbCO7Mi8KMqiXFssIs0x" class="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-green-300 dark:border-green-700/50 bg-green-100/80 dark:bg-green-900/40 text-green-700 dark:text-green-300 font-semibold hover:bg-green-200 dark:hover:bg-green-800/60 shadow-sm glass transition-all">
+                    <i class="fa-brands fa-whatsapp text-xl"></i>
+                    <span>Saluran WhatsApp</span>
+                </a>
+                <a href="https://t.me/haloparapembenci" class="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-blue-300 dark:border-blue-700/50 bg-blue-100/80 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold hover:bg-blue-200 dark:hover:bg-blue-800/60 shadow-sm glass transition-all">
+                    <i class="fa-brands fa-telegram text-xl"></i>
+                    <span>Saluran Telegram</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Logika Tema (Terang/Gelap)
+        const html = document.documentElement;
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const iconSun = document.getElementById('iconSun');
+        const iconMoon = document.getElementById('iconMoon');
+
+        let currentTheme = localStorage.getItem('theme') || 'dark';
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                html.classList.add('dark');
+                iconSun.classList.remove('hidden');
+                iconMoon.classList.add('hidden');
+            } else {
+                html.classList.remove('dark');
+                iconSun.classList.add('hidden');
+                iconMoon.classList.remove('hidden');
+            }
+            localStorage.setItem('theme', theme);
+        }
+
+        applyTheme(currentTheme);
+
+        themeToggleBtn.addEventListener('click', () => {
+            currentTheme = html.classList.contains('dark') ? 'light' : 'dark';
+            applyTheme(currentTheme);
+        });
+
+        // Logika Salju
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let snowflakes = [];
+
+        function initCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+
+        class Snowflake {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.radius = Math.random() * 2.5 + 0.5;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1.5 + 0.5;
+                this.opacity = Math.random() * 0.6 + 0.2;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.y > height) {
+                    this.y = -5;
+                    this.x = Math.random() * width;
+                }
+                if (this.x > width) this.x = 0;
+                if (this.x < 0) this.x = width;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                if (html.classList.contains('dark')) {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                } else {
+                    ctx.fillStyle = `rgba(100, 116, 139, ${this.opacity})`;
+                }
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 100; i++) {
+            snowflakes.push(new Snowflake());
+        }
+
+        function animateSnow() {
+            ctx.clearRect(0, 0, width, height);
+            snowflakes.forEach(flake => { flake.update(); flake.draw(); });
+            requestAnimationFrame(animateSnow);
+        }
+        animateSnow();
+
+        // Data Produk Manual (Anda bisa mengubah nama, harga, terjual, dan menambahkan deskripsi per produk di sini)
+        const defaultDeskripsi = ["akun freshbill", "fullgaransi", "akun stong"];
+
+        const dataProdukManual = [
+            { nama: "Alight Motion 12 Bulan", harga: 1000, terjual: 325, deskripsi: ["tanpa watermark", "akun seller", "garansi 6 bulan"] },
+            { nama: "Apple Music", harga: 5000, terjual: 85, deskripsi: ["via invite", "akun pembeli", "garansi 25 hari", "strong account"] },
+            { nama: "Bstation Sharing", harga: 7000, terjual: 255, deskripsi: ["s", "akun seller", "garansi 25 hari"] },
+            { nama: "Canva 1 Bulan", harga: 1000, terjual: 2653, deskripsi: ["via invite", "private", "garansi 20 hari", "strong account"] },
+            { nama: "Canva Edu Lifetime", harga: 10000, terjual: 1964, deskripsi: ["via invite", "private", "garansi 6 bulan", "strong account"] },
+            { nama: "CapCut 1 Bulan", harga: 19500, terjual: 2199, deskripsi: ["akun seller", "private", "garansi bf 25 hari", "strong account"] },
+            { nama: "CapCut 1 Minggu", harga: 6500, terjual: 1700, deskripsi: ["akun seller", "private", "garansi bf 3 hari", "strong account"] },
+            { nama: "ChatGPT Sharing Go", harga: 15000, terjual: 509, deskripsi: ["sharing 8 user", "akun seller", "garansi 25 hari"] },
+            { nama: "Disney Sharing", harga: 15000, terjual: 50, deskripsi: ["sharing 6 user", "akun seller", "garansi 25 hari"] },
+            { nama: "Duolingo 1 Minggu", harga: 3000, terjual: 25, deskripsi: ["via invite", "private", "garansi 3 hari", "strong account"] },
+            { nama: "Duolingo 1 Bulan", harga: 7000, terjual: 25, deskripsi: ["via invite", "private", "garansi 25 hari", "strong account"] },
+            { nama: "Gemini Pro 18 Bulan", harga: 20000, terjual: 150, deskripsi: ["invite", "private", "garansi login 24 jam", "strong account"] },
+            { nama: "Getcontact", harga: 10000, terjual: 70, deskripsi: ["nomor pembeli", "private", "garansi 20 hari", "strong account"] },
+            { nama: "iQIYI Standar", harga: 30000, terjual: 30, deskripsi: ["akun seller", "private", "garansi 25 hari"] },
+            { nama: "Meitu 1 Minggu", harga: 8000, terjual: 38, deskripsi: ["akun seller", "private", "garansi 3 hari", "strong account"] },
+            { nama: "Netflix 1U", harga: 35000, terjual: 194, deskripsi: ["akun seller", "sharing max 1 dev", "garansi 25 hari", "strong account"] },
+            { nama: "Netflix Semi", harga: 38000, terjual: 233, deskripsi: ["akun seller", "sharing max 2 dev", "garansi 25 hari", "strong account"] },
+            { nama: "Notion AI", harga: 8000, terjual: 75, deskripsi: ["akun seller", "private", "garansi 25 hari", "strong account"] },
+            { nama: "Prime Private", harga: 15000, terjual: 41, deskripsi: ["akun seller", "bisa login 3 dev", "garansi 25 hari"] },
+            { nama: "Prime Sharing", harga: 9000, terjual: 43, deskripsi: ["akun seller", "sharing 3 user", "garansi 25 hari"] },
+            { nama: "Spotify", harga: 5000, terjual: 130, deskripsi: ["akun seller", "private", "garansi 24 jam", "strong account"] },
+            { nama: "Vidio", harga: 13000, terjual: 40, deskripsi: ["akun seller", "khusus tv only", "garansi 24 jam", "strong account"] },
+            { nama: "Viu", harga: 1000, terjual: 427, deskripsi: ["akun seller", "private", "garansi 25 hari", "strong account"] },
+            { nama: "VPN HMA", harga: 13000, terjual: 50, deskripsi: ["login via code", "akun pembeli", "garansi 20 hari", "strong account"] },
+            { nama: "WeTV Sharing", harga: 10000, terjual: 129, deskripsi: ["akun seller", "sharing 6 user", "garansi 25 hari"] },
+            { nama: "WeTV Private", harga: 30000, terjual: 290, deskripsi: ["akun seller", "bisa login 6 dev", "garansi 25 hari", "strong account"] },
+            { nama: "Wink 1 Minggu", harga: 8000, terjual: 29, deskripsi: ["akun seller", "private", "garansi 25 hari", "strong account"] },
+            { nama: "YouTube", harga: 5000, terjual: 1376, deskripsi: ["via invite", "akun pembeli", "garansi 20 hari", "strong account"] },
+            { nama: "Zoom 14 Hari", harga: 4000, terjual: 87, deskripsi: ["akun seller", "private", "garansi 7 hari", "strong account"] },
+            { nama: "Zoom 1 Bulan", harga: 5000, terjual: 79, deskripsi: ["akun seller", "private renew 14 hari", "fullgaransi", "strong account"] }
+        ];
+
+        // Fungsi Cerdas Pencari Logo Berdasarkan Nama Web/Domain App
+        const getLogoUrl = (name) => {
+            const n = name.toLowerCase();
+            let domain = "";
+            
+            if (n.includes('apple')) domain = "music.apple.com";
+            else if (n.includes('canva')) domain = "canva.com";
+            else if (n.includes('capcut')) domain = "capcut.com";
+            else if (n.includes('wink')) domain = "wink.ai";
+            else if (n.includes('chatgpt')) domain = "openai.com";
+            else if (n.includes('disney')) domain = "disneyplus.com";
+            else if (n.includes('duolingo')) domain = "duolingo.com";
+            else if (n.includes('gemini')) domain = "gemini.google.com";
+            else if (n.includes('getcontact')) domain = "getcontact.com";
+            else if (n.includes('iqiyi')) domain = "iq.com";
+            else if (n.includes('netflix')) domain = "netflix.com";
+            else if (n.includes('notion')) domain = "notion.so";
+            else if (n.includes('prime')) domain = "primevideo.com";
+            else if (n.includes('spotify')) domain = "spotify.com";
+            else if (n.includes('vidio')) domain = "vidio.com";
+            else if (n.includes('viu')) domain = "viu.com";
+            else if (n.includes('wetv')) domain = "wetv.vip";
+            else if (n.includes('youtube')) domain = "youtube.com";
+
+            if (domain) {
+                return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=256`;
+            }
+            return null;
+        };
+
+        const products = [];
+        
+        dataProdukManual.forEach((item, index) => {
+            let duration = "1 Bulan";
+            let displayName = item.nama;
+            
+            const durationRegex = /\b(\d+\s*(Bulan|Minggu|Hari)|Lifetime)\b/i;
+            const match = item.nama.match(durationRegex);
+            
+            if (match) {
+                duration = match[0];
+                displayName = item.nama.replace(durationRegex, '').trim(); 
+            }
+
+            const placeholderFallback = `https://placehold.co/400x300/475569/ffffff?text=${encodeURIComponent(displayName)}`;
+            let finalImageUrl = getLogoUrl(displayName);
+            
+            const lowerName = displayName.toLowerCase();
+            if (lowerName.includes('zoom')) {
+                finalImageUrl = 'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://zoom.us&size=256';
+            } else if (lowerName.includes('meitu')) {
+                finalImageUrl = 'https://play-lh.googleusercontent.com/pTGi7U5o9Q2uwhkMZO3PEsmYGCix9WVQN3QM-CQsdCU9L2bO2kYt0x1qEzA6-DAvKLbpHID0ed64vvwP-BWx4P4';
+            } else if (lowerName.includes('wink')) {
+                finalImageUrl = 'https://play-lh.googleusercontent.com/cshtf7MBtmCo5hOjigtUOLgpCcx-ZkQ_eisfmSvK0QZBKSG5bp4MEIH9iqdGYWnUK0B1bEc6iQ10p7WVZYVW7A=w1024'; 
+            } else if (lowerName.includes('alight motion')) {
+                finalImageUrl = 'https://img.utdstc.com/icon/c97/f24/c97f2493b3b32c1b3ddec2f11baddee22e4d2e2983c1939bb6107d8e0d036d0b:600';
+            } else if (lowerName.includes('vpn hma')) {
+                finalImageUrl = 'https://static2.hidemyass.com/10004980/web/i/hma-vpn-logo.png';
+            } else if (lowerName.includes('bstation')) {
+                finalImageUrl = 'https://pic.bstarstatic.com/fe-activity/images/YoYvSHUSXE_w600_h600.jpg';
+            }
+            
+            if (!finalImageUrl) {
+                finalImageUrl = placeholderFallback;
+            }
+
+            products.push({ 
+                id: index + 1, 
+                name: displayName, 
+                duration, 
+                price: item.harga, 
+                sold: item.terjual, 
+                deskripsi: item.deskripsi,
+                image: finalImageUrl, 
+                placeholder: placeholderFallback 
+            });
+        });
+
+        const formatRp = (angka) => {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        };
+
+        const grid = document.getElementById('productGrid');
+
+        products.forEach(product => {
+            const listDeskripsiHTML = product.deskripsi.map(poin => 
+                `<li class="flex gap-1.5"><span class="text-indigo-500">-</span> ${poin}</li>`
+            ).join('');
+
+            const cardHTML = `
+                <div class="card-hover glass bg-white/60 dark:bg-slate-800/60 border border-white/60 dark:border-slate-700/60 rounded-2xl flex flex-col overflow-hidden shadow-lg hover:shadow-indigo-500/20 dark:hover:shadow-indigo-500/30 transition-all duration-300">
+                    
+                    <div class="w-full h-28 md:h-40 bg-white dark:bg-slate-800/80 relative overflow-hidden group flex items-center justify-center p-4">
+                        <img src="${product.image}" 
+                             onerror="this.onerror=null; this.src='${product.placeholder}';" 
+                             alt="${product.name}" 
+                             class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-md rounded-xl">
+                    </div>
+                    
+                    <div class="p-3 md:p-4 flex flex-col flex-grow">
+                        
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                            <h3 class="text-sm md:text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                                ${product.name}
+                            </h3>
+                            <span class="shrink-0 px-2 py-1 text-[10px] md:text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 rounded-md border border-indigo-200 dark:border-indigo-700/50 uppercase tracking-wider">
+                                ${product.duration}
+                            </span>
+                        </div>
+                        
+                        <div class="mb-3 md:mb-4 flex-grow mt-2">
+                            <ul class="text-xs md:text-sm text-slate-700 dark:text-slate-300 space-y-0.5">
+                                ${listDeskripsiHTML}
+                            </ul>
+                        </div>
+                        
+                        <div class="mt-auto pt-2.5 md:pt-3 border-t border-slate-300/50 dark:border-slate-600/50">
+                            <div class="text-base md:text-xl font-extrabold text-indigo-700 dark:text-indigo-400 mb-2">
+                                ${formatRp(product.price)}
+                            </div>
+                            
+                            <div class="inline-flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-900/50 px-2 py-1 md:px-2.5 md:py-1.5 rounded-md border border-slate-300/50 dark:border-slate-700/50 w-full sm:w-auto">
+                                <i class="fa-solid fa-chart-line text-emerald-500"></i>
+                                Terjual: ${product.sold}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            grid.insertAdjacentHTML('beforeend', cardHTML);
+        });
+    </script>
+</body>
+</html>
