@@ -64,7 +64,8 @@
         .social-btn:hover { transform: translateY(-3px) scale(1.1); }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 text-slate-800 dark:text-slate-200 min-h-screen relative flex flex-col selection:bg-indigo-500 selection:text-white">
+<!-- PERBAIKAN: Menambahkan bg-slate-50 dark:bg-slate-950 sebagai fallback warna solid untuk iOS Safari -->
+<body class="bg-slate-50 dark:bg-slate-950 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 text-slate-800 dark:text-slate-200 min-h-screen relative flex flex-col selection:bg-indigo-500 selection:text-white">
 
     <!-- Animasi Partikel -->
     <canvas id="snowCanvas" class="fixed inset-0 pointer-events-none -z-10 opacity-70"></canvas>
@@ -111,7 +112,7 @@
                 Solusi cerdas untuk kalian yang cari harga murah, proses super cepat, & bergaransi penuh. Tingkatkan produktivitas dan hiburanmu sekarang!
             </p>
 
-            <!-- KOTAK PERHATIAN (Diambil dari referensi gambar) -->
+            <!-- KOTAK PERHATIAN -->
             <div class="max-w-3xl mx-auto mb-10 border border-amber-500/50 bg-amber-500/10 dark:bg-amber-500/5 rounded-xl p-4 text-sm md:text-base text-amber-700 dark:text-amber-400 flex items-center justify-center gap-3 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
                 <i class="fa-solid fa-triangle-exclamation text-amber-500 text-lg flex-shrink-0"></i>
                 <p class="font-medium text-left">
@@ -435,7 +436,7 @@
         const dataProdukManual = [
             { nama: "Alight Motion 12 Bulan", harga: 1000, terjual: 325, deskripsi: ["tanpa watermark", "akun seller", "garansi 6 bulan"] },
             { nama: "Apple Music", harga: 5000, terjual: 85, deskripsi: ["via invite", "akun pembeli", "garansi 25 hari", "strong account"] },
-            { nama: "Bstation Sharing", harga: 7000, terjual: 255, deskripsi: ["akun seller", "garansi 25 hari", "strong account"] },
+            { nama: "Bstation Sharing", harga: 7000, terjual: 255, deskripsi: ["s", "akun seller", "garansi 25 hari"] },
             { nama: "Canva 1 Bulan", harga: 1000, terjual: 2653, deskripsi: ["via invite", "private", "garansi 20 hari", "strong account"] },
             { nama: "Canva Edu Lifetime", harga: 10000, terjual: 1964, deskripsi: ["via invite", "private", "garansi 6 bulan", "strong account"] },
             { nama: "CapCut 1 Bulan", harga: 19500, terjual: 2199, deskripsi: ["akun seller", "private", "garansi bf 25 hari", "strong account"] },
@@ -460,7 +461,7 @@
             { nama: "WeTV Sharing", harga: 10000, terjual: 129, deskripsi: ["akun seller", "sharing 6 user", "garansi 25 hari"] },
             { nama: "WeTV Private", harga: 30000, terjual: 290, deskripsi: ["akun seller", "bisa login 6 dev", "garansi 25 hari", "strong account"] },
             { nama: "Wink 1 Minggu", harga: 8000, terjual: 29, deskripsi: ["akun seller", "private", "garansi 25 hari", "strong account"] },
-            { nama: "YouTube", harga: 5000, terjual: 1376, deskripsi: ["via invite", "akun pembeli", "garansi 20 hari", "strong account"] },
+            { nama: "YT Prem Invite", harga: 5000, terjual: 1376, deskripsi: ["via invite", "akun pembeli", "garansi 20 hari", "strong account"] },
             { nama: "Zoom 14 Hari", harga: 4000, terjual: 87, deskripsi: ["akun seller", "private", "garansi 7 hari", "strong account"] },
             { nama: "Zoom 1 Bulan", harga: 5000, terjual: 79, deskripsi: ["akun seller", "private renew 14 hari", "fullgaransi", "strong account"] }
         ];
@@ -473,7 +474,6 @@
             if (n.includes('apple')) domain = "music.apple.com";
             else if (n.includes('canva')) domain = "canva.com";
             else if (n.includes('capcut')) domain = "capcut.com";
-            else if (n.includes('wink')) domain = "wink.ai";
             else if (n.includes('chatgpt')) domain = "openai.com";
             else if (n.includes('disney')) domain = "disneyplus.com";
             else if (n.includes('duolingo')) domain = "duolingo.com";
@@ -487,7 +487,7 @@
             else if (n.includes('vidio')) domain = "vidio.com";
             else if (n.includes('viu')) domain = "viu.com";
             else if (n.includes('wetv')) domain = "wetv.vip";
-            else if (n.includes('youtube')) domain = "youtube.com";
+            else if (n.includes('yt prem')) domain = "youtube.com";
 
             if (domain) {
                 return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=256`;
