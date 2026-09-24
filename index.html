@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Katalog Digital Premium - DKH SHOP MARKET</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -13,14 +14,21 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
         }
     </script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
         body {
@@ -28,128 +36,313 @@
         }
 
         .glass {
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .card-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .card-hover:hover {
-            transform: translateY(-6px);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
         
-        .social-btn {
-            transition: all 0.3s ease;
-        }
-        .social-btn:hover {
-            transform: translateY(-3px) scale(1.05);
-        }
+        .social-btn { transition: all 0.3s ease; }
+        .social-btn:hover { transform: translateY(-3px) scale(1.1); }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-200 min-h-screen relative flex flex-col">
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 text-slate-800 dark:text-slate-200 min-h-screen relative flex flex-col selection:bg-indigo-500 selection:text-white">
 
-    <!-- Animasi Salju -->
-    <canvas id="snowCanvas" class="fixed inset-0 pointer-events-none -z-10"></canvas>
+    <!-- Animasi Partikel -->
+    <canvas id="snowCanvas" class="fixed inset-0 pointer-events-none -z-10 opacity-70"></canvas>
 
-    <!-- Header -->
-    <header class="sticky top-0 z-50 glass bg-white/40 dark:bg-slate-900/60 border-b border-white/50 dark:border-slate-700/50 shadow-sm">
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-50 glass shadow-sm transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex justify-between items-center">
                 
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
-                        <i class="fa-solid fa-bag-shopping text-xl"></i>
+                <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                        <i class="fa-solid fa-store text-lg"></i>
                     </div>
-                    <h1 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-                        DKH SHOP <span class="text-indigo-600 dark:text-indigo-400">MARKET</span>
+                    <h1 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-1">
+                        DKH SHOP <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500">MARKET</span>
                     </h1>
                 </div>
 
-                <button id="themeToggle" class="p-2.5 rounded-full bg-white/60 dark:bg-slate-800/60 border border-white/50 dark:border-slate-700/50 text-slate-700 dark:text-yellow-400 hover:scale-110 transition-transform shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <i id="iconSun" class="fa-solid fa-sun hidden"></i>
-                    <i id="iconMoon" class="fa-solid fa-moon"></i>
+                <button id="themeToggle" class="p-2.5 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-yellow-400 hover:scale-105 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <i id="iconSun" class="fa-solid fa-sun hidden text-lg"></i>
+                    <i id="iconMoon" class="fa-solid fa-moon text-lg"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 flex-grow w-full">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 flex-grow w-full overflow-hidden">
         
-        <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight drop-shadow-sm">
-                Pusat Layanan Premium
-            </h2>
-            <p class="text-base md:text-lg text-slate-700 dark:text-slate-300 mb-8 font-medium">
-                Solusi cerdas untuk kalian yang cari harga murah, cepat, & bergaransi.
-            </p>
+        <!-- Hero Section -->
+        <div class="text-center mb-16 mt-4" data-aos="zoom-in" data-aos-duration="800">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 text-sm font-semibold mb-6 border border-indigo-200 dark:border-indigo-700/50">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+                </span>
+                Sistem Otomatis & Terpercaya
+            </div>
             
-            <!-- Tombol Order -->
+            <h2 class="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight drop-shadow-sm leading-tight">
+                Pusat Layanan <br class="hidden md:block" />
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500">Premium Digital</span>
+            </h2>
+            <p class="text-base md:text-lg text-slate-600 dark:text-slate-300 mb-8 font-medium max-w-2xl mx-auto">
+                Solusi cerdas untuk kalian yang cari harga murah, proses super cepat, & bergaransi penuh. Tingkatkan produktivitas dan hiburanmu sekarang!
+            </p>
+
+            <!-- KOTAK PERHATIAN (Diambil dari referensi gambar) -->
+            <div class="max-w-3xl mx-auto mb-10 border border-amber-500/50 bg-amber-500/10 dark:bg-amber-500/5 rounded-xl p-4 text-sm md:text-base text-amber-700 dark:text-amber-400 flex items-center justify-center gap-3 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                <i class="fa-solid fa-triangle-exclamation text-amber-500 text-lg flex-shrink-0"></i>
+                <p class="font-medium text-left">
+                    <span class="font-bold">PERHATIAN:</span> Jangan pernah bertransaksi dengan orang yang mengatasnamakan DKH SHOP, selain nomor real di website resmi kami.
+                </p>
+            </div>
+            
+            <!-- Tombol Order Global -->
             <div class="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-4xl mx-auto">
-                <a href="https://chat.whatsapp.com/Jw8BBhN6N7V1VrR5DXyVd4" class="w-full sm:w-auto flex flex-1 items-center justify-center gap-2 px-5 py-3 rounded-xl border border-green-300 dark:border-green-700/50 bg-green-100/80 dark:bg-green-900/40 text-green-700 dark:text-green-300 font-semibold hover:bg-green-200 dark:hover:bg-green-800/60 shadow-sm glass transition-all">
-                    <i class="fa-brands fa-whatsapp text-xl"></i>
-                    <span class="text-sm md:text-base">Order via grup whatsapp</span>
+                <a href="https://chat.whatsapp.com/Jw8BBhN6N7V1VrR5DXyVd4" class="group w-full sm:w-auto flex flex-1 items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-emerald-400 to-emerald-600 text-white font-bold hover:shadow-lg hover:shadow-emerald-500/40 transition-all" target="_blank">
+                    <i class="fa-brands fa-whatsapp text-2xl group-hover:scale-110 transition-transform"></i>
+                    <span>Grup WhatsApp</span>
                 </a>
 
-                <a href="http://telegram.me/dkhshoporder_bot" class="w-full sm:w-auto flex flex-1 items-center justify-center gap-2 px-5 py-3 rounded-xl border border-blue-300 dark:border-blue-700/50 bg-blue-100/80 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold hover:bg-blue-200 dark:hover:bg-blue-800/60 shadow-sm glass transition-all">
-                    <i class="fa-solid fa-robot text-xl"></i>
-                    <span class="text-sm md:text-base">Order via bot autoorder</span>
+                <a href="http://telegram.me/dkhshoporder_bot" class="group w-full sm:w-auto flex flex-1 items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold hover:shadow-lg hover:shadow-blue-500/40 transition-all" target="_blank">
+                    <i class="fa-solid fa-robot text-2xl group-hover:scale-110 transition-transform"></i>
+                    <span>Bot Auto Order</span>
                 </a>
 
-                <a href="https://wa.me/+6285693436052" class="w-full sm:w-auto flex flex-1 items-center justify-center gap-2 px-5 py-3 rounded-xl border border-pink-300 dark:border-pink-700/50 bg-pink-100/80 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 font-semibold hover:bg-pink-200 dark:hover:bg-pink-800/60 shadow-sm glass transition-all">
-                    <i class="fa-solid fa-user-headset text-xl"></i>
-                    <span class="text-sm md:text-base">Order manual ke admin</span>
+                <a href="https://wa.me/+6285693436052" class="group w-full sm:w-auto flex flex-1 items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-bold hover:shadow-lg hover:shadow-pink-500/40 transition-all" target="_blank">
+                    <i class="fa-solid fa-headset text-2xl group-hover:scale-110 transition-transform"></i>
+                    <span>Chat Admin</span>
                 </a>
             </div>
         </div>
 
-        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
+        <!-- Kolom Pencarian Canggih -->
+        <div class="max-w-2xl mx-auto mb-12 relative" data-aos="fade-up" data-aos-delay="200">
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                </div>
+                <input type="text" id="searchInput" placeholder="Cari aplikasi... (Contoh: Canva, Netflix)" class="block w-full pl-12 pr-4 py-4 rounded-2xl glass text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm">
+                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <span class="text-xs text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-600">Live Search</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid Katalog Produk -->
+        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             <!-- Kartu produk diinjeksi via JavaScript -->
+        </div>
+        
+        <!-- Pesan Jika Pencarian Kosong -->
+        <div id="noResultMsg" class="hidden text-center py-10">
+            <i class="fa-solid fa-box-open text-4xl text-slate-400 mb-3"></i>
+            <p class="text-slate-500 dark:text-slate-400 font-medium">Produk tidak ditemukan.</p>
+        </div>
+
+        <!-- FITUR KEUNGGULAN -->
+        <div class="mt-32 mb-16 text-center max-w-6xl mx-auto">
+            <div data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight">
+                    Kenapa Pilih <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-500">DKH SHOP</span>?
+                </h2>
+                <p class="text-base md:text-lg text-slate-600 dark:text-slate-400 mb-12 font-medium">
+                    Platform terpercaya untuk kebutuhan akun digital premium kamu
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+                <!-- Keunggulan 1 -->
+                <div class="glass p-6 rounded-3xl hover:-translate-y-2 transition-transform duration-300 shadow-md hover:shadow-xl" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white mb-5 text-2xl shadow-lg shadow-blue-500/30">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Instan & Cepat</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Pesanan diproses dalam hitungan detik. Tidak perlu menunggu lama setelah melakukan pembayaran.</p>
+                </div>
+                <!-- Keunggulan 2 -->
+                <div class="glass p-6 rounded-3xl hover:-translate-y-2 transition-transform duration-300 shadow-md hover:shadow-xl" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white mb-5 text-2xl shadow-lg shadow-orange-500/30">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Premium Ready</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Akun premium apps tersedia banyak stok, langsung bisa dipakai setelah kamu order.</p>
+                </div>
+                <!-- Keunggulan 3 -->
+                <div class="glass p-6 rounded-3xl hover:-translate-y-2 transition-transform duration-300 shadow-md hover:shadow-xl" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white mb-5 text-2xl shadow-lg shadow-teal-500/30">
+                        <i class="fa-solid fa-tags"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Harga Terjangkau</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Harga paling murah dengan kualitas tetap terjamin. cocok buat kalian yang gamau keluarin uang banyak.</p>
+                </div>
+                <!-- Keunggulan 4 -->
+                <div class="glass p-6 rounded-3xl hover:-translate-y-2 transition-transform duration-300 shadow-md hover:shadow-xl" data-aos="fade-up" data-aos-delay="400">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white mb-5 text-2xl shadow-lg shadow-purple-500/30">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Aman Terpercaya</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Transaksi aman, data kamu terlindungi. DKH SHOP telah dipercaya oleh ribuan pelanggan dari tahun 2025.</p>
+                </div>
+                <!-- Keunggulan 5 -->
+                <div class="glass p-6 rounded-3xl hover:-translate-y-2 transition-transform duration-300 shadow-md hover:shadow-xl" data-aos="fade-up" data-aos-delay="500">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-400 to-red-500 flex items-center justify-center text-white mb-5 text-2xl shadow-lg shadow-red-500/30">
+                        <i class="fa-solid fa-certificate"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Full Garansi</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Semua produk kami dilengkapi dengan garansi penuh sesuai dengan durasi yang dibeli.</p>
+                </div>
+                <!-- Keunggulan 6 -->
+                <div class="glass p-6 rounded-3xl hover:-translate-y-2 transition-transform duration-300 shadow-md hover:shadow-xl" data-aos="fade-up" data-aos-delay="600">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white mb-5 text-2xl shadow-lg shadow-indigo-500/30">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Pelayanan Cepat</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Admin fast respon dan ramah siap membantu kamu jika ada kendala selama 24 jam.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FITUR FAQ -->
+        <div class="mt-24 mb-8 max-w-3xl mx-auto" data-aos="fade-up">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight">
+                    Pertanyaan <span class="text-indigo-500">Umum</span>
+                </h2>
+                <p class="text-base md:text-lg text-slate-600 dark:text-slate-400 font-medium">
+                    Hal-hal yang paling sering ditanyakan pengguna
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <!-- FAQ Items (Dibuat Dinamis) -->
+                <div class="glass rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <button class="faq-btn w-full px-6 py-5 flex justify-between items-center text-left focus:outline-none group">
+                        <span class="font-bold text-slate-900 dark:text-white group-hover:text-indigo-500 transition-colors">Apa itu DKH SHOP?</span>
+                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                            <i class="fa-solid fa-chevron-up text-slate-500 dark:text-slate-400 transition-transform duration-300 icon-faq"></i>
+                        </div>
+                    </button>
+                    <div class="faq-content px-6 pb-5 text-sm text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-200/50 dark:border-slate-700/50 pt-4 mt-2">
+                        DKH SHOP adalah platform penyedia layanan pembuatan dan perpanjangan akun aplikasi premium terlengkap. Kami menghadirkan solusi kebutuhan digital Anda dengan harga yang terjangkau, proses cepat, dan bergaransi penuh.
+                    </div>
+                </div>
+
+                <div class="glass rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <button class="faq-btn w-full px-6 py-5 flex justify-between items-center text-left focus:outline-none group">
+                        <span class="font-bold text-slate-900 dark:text-white group-hover:text-indigo-500 transition-colors">Bagaimana cara order Premium Apps?</span>
+                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                            <i class="fa-solid fa-chevron-down text-slate-500 dark:text-slate-400 transition-transform duration-300 icon-faq"></i>
+                        </div>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-5 text-sm text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-200/50 dark:border-slate-700/50 pt-4 mt-2">
+                        Sangat mudah! Kamu cukup mencari aplikasi di kolom pencarian, klik tombol "Pesan Sekarang" di katalog, atau gunakan tombol pemesanan yang ada di bagian atas (Grup WhatsApp, Bot Autoorder, atau langsung chat manual ke Admin).
+                    </div>
+                </div>
+
+                <div class="glass rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <button class="faq-btn w-full px-6 py-5 flex justify-between items-center text-left focus:outline-none group">
+                        <span class="font-bold text-slate-900 dark:text-white group-hover:text-indigo-500 transition-colors">Metode pembayaran apa saja yang tersedia?</span>
+                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                            <i class="fa-solid fa-chevron-down text-slate-500 dark:text-slate-400 transition-transform duration-300 icon-faq"></i>
+                        </div>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-5 text-sm text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-200/50 dark:border-slate-700/50 pt-4 mt-2">
+                        Kami menerima berbagai metode pembayaran populer di Indonesia. Mulai dari Transfer Bank, e-Wallet (DANA, GoPay, ShopeePay), hingga pembayaran menggunakan QRIS.
+                    </div>
+                </div>
+
+                <div class="glass rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <button class="faq-btn w-full px-6 py-5 flex justify-between items-center text-left focus:outline-none group">
+                        <span class="font-bold text-slate-900 dark:text-white group-hover:text-indigo-500 transition-colors">Apakah ada garansi jika akun bermasalah?</span>
+                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                            <i class="fa-solid fa-chevron-down text-slate-500 dark:text-slate-400 transition-transform duration-300 icon-faq"></i>
+                        </div>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-5 text-sm text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-200/50 dark:border-slate-700/50 pt-4 mt-2">
+                        Tentu saja! Kami memberikan garansi untuk setiap produk sesuai dengan durasi yang kamu beli. Jika terjadi kendala pada akun, silakan lapor ke admin dan kami akan memperbaiki atau menggantinya dengan akun baru.
+                    </div>
+                </div>
+            </div>
         </div>
 
     </main>
 
     <!-- Footer -->
-    <footer class="relative border-t border-white/40 dark:border-slate-800/60 mt-12 glass bg-white/30 dark:bg-slate-900/40 overflow-hidden">
+    <footer class="relative mt-12 glass overflow-hidden border-b-0 border-x-0">
         <div class="max-w-4xl mx-auto px-4 py-12 md:py-16 flex flex-col items-center text-center relative z-20">
             
+            <h3 class="text-lg font-semibold text-slate-500 dark:text-slate-400 mb-6 uppercase tracking-widest text-sm">Temukan Kami</h3>
+            
             <div class="flex items-center gap-6 mb-10">
-                <a href="https://www.instagram.com/hannzx125?stkn=MTBtb3QzZG56eWVldg%3D%3D&utm_source=qr" class="social-btn w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/30 text-2xl">
+                <a href="https://www.instagram.com/hannzx125?stkn=MTBtb3QzZG56eWVldg%3D%3D&utm_source=qr" class="social-btn w-14 h-14 flex items-center justify-center rounded-2xl bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/30 text-2xl" target="_blank">
                     <i class="fa-brands fa-instagram"></i>
                 </a>
-                <a href="https://www.tiktok.com/@ryhan.dkh?_r=1&_t=ZS-99tU9xFHvnA" class="social-btn w-12 h-12 flex items-center justify-center rounded-full bg-black text-white shadow-lg shadow-slate-900/30 text-2xl border border-white/20 dark:border-slate-700">
+                <a href="https://www.tiktok.com/@ryhan.dkh?_r=1&_t=ZS-99tU9xFHvnA" class="social-btn w-14 h-14 flex items-center justify-center rounded-2xl bg-slate-900 dark:bg-black text-white shadow-lg shadow-slate-900/30 text-2xl border border-slate-700" target="_blank">
                     <i class="fa-brands fa-tiktok"></i>
                 </a>
-                <a href="https://www.facebook.com/share/1933opZyod/?mibextid=wwXIfr" class="social-btn w-12 h-12 flex items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/30 text-2xl">
+                <a href="https://www.facebook.com/share/1933opZyod/?mibextid=wwXIfr" class="social-btn w-14 h-14 flex items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/30 text-2xl" target="_blank">
                     <i class="fa-brands fa-facebook-f"></i>
                 </a>
             </div>
 
-            <hr class="w-1/2 border-slate-300/50 dark:border-slate-700/50 mb-8">
+            <hr class="w-full max-w-md border-slate-300/50 dark:border-slate-700/50 mb-8">
 
             <h3 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-6 uppercase tracking-wider">
-                INFORMASI DKH SHOP
+                Komunitas & Saluran Info
             </h3>
             
-            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 w-full max-w-md mx-auto relative z-20">
-                <a href="https://whatsapp.com/channel/0029VbCO7Mi8KMqiXFssIs0x" class="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-green-300 dark:border-green-700/50 bg-green-100/80 dark:bg-green-900/40 text-green-700 dark:text-green-300 font-semibold hover:bg-green-200 dark:hover:bg-green-800/60 shadow-sm glass transition-all">
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 w-full max-w-lg mx-auto relative z-20">
+                <a href="https://whatsapp.com/channel/0029VbCO7Mi8KMqiXFssIs0x" class="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl border border-green-300 dark:border-green-700/50 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-semibold hover:bg-green-100 dark:hover:bg-green-800/40 transition-all" target="_blank">
                     <i class="fa-brands fa-whatsapp text-xl"></i>
                     <span>Saluran WhatsApp</span>
                 </a>
-                <a href="https://t.me/haloparapembenci" class="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-blue-300 dark:border-blue-700/50 bg-blue-100/80 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold hover:bg-blue-200 dark:hover:bg-blue-800/60 shadow-sm glass transition-all">
+                <a href="https://t.me/haloparapembenci" class="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl border border-blue-300 dark:border-blue-700/50 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-semibold hover:bg-blue-100 dark:hover:bg-blue-800/40 transition-all" target="_blank">
                     <i class="fa-brands fa-telegram text-xl"></i>
                     <span>Saluran Telegram</span>
                 </a>
             </div>
+            
+            <p class="mt-12 text-sm text-slate-500 dark:text-slate-500 font-medium">
+                &copy; 2026 DKH SHOP MARKET. All rights reserved.
+            </p>
         </div>
     </footer>
 
+    <!-- Scripts AOS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
     <script>
+        // Inisialisasi AOS (Animasi Scroll)
+        AOS.init({
+            once: true, 
+            offset: 50,
+            duration: 600,
+            easing: 'ease-in-out-cubic',
+        });
+
         // Logika Tema (Terang/Gelap)
         const html = document.documentElement;
         const themeToggleBtn = document.getElementById('themeToggle');
@@ -178,11 +371,11 @@
             applyTheme(currentTheme);
         });
 
-        // Logika Salju
+        // Logika Partikel Digital (Bukan salju biasa lagi)
         const canvas = document.getElementById('snowCanvas');
         const ctx = canvas.getContext('2d');
         let width, height;
-        let snowflakes = [];
+        let particles = [];
 
         function initCanvas() {
             width = window.innerWidth;
@@ -193,23 +386,23 @@
         window.addEventListener('resize', initCanvas);
         initCanvas();
 
-        class Snowflake {
+        class Particle {
             constructor() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.radius = Math.random() * 2.5 + 0.5;
-                this.speedX = Math.random() * 1 - 0.5;
-                this.speedY = Math.random() * 1.5 + 0.5;
-                this.opacity = Math.random() * 0.6 + 0.2;
+                this.radius = Math.random() * 2 + 0.5;
+                this.speedY = Math.random() * 0.8 + 0.2; // Bergerak lambat ke atas/bawah
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.direction = Math.random() > 0.5 ? 1 : -1;
             }
 
             update() {
+                this.y -= this.speedY * this.direction;
                 this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.y > height) {
-                    this.y = -5;
-                    this.x = Math.random() * width;
-                }
+                
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
                 if (this.x > width) this.x = 0;
                 if (this.x < 0) this.x = width;
             }
@@ -218,28 +411,27 @@
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 if (html.classList.contains('dark')) {
-                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                    ctx.fillStyle = `rgba(129, 140, 248, ${this.opacity})`; // Indigo tint
                 } else {
-                    ctx.fillStyle = `rgba(100, 116, 139, ${this.opacity})`;
+                    ctx.fillStyle = `rgba(99, 102, 241, ${this.opacity})`; // Indigo tint
                 }
                 ctx.fill();
             }
         }
 
-        for (let i = 0; i < 100; i++) {
-            snowflakes.push(new Snowflake());
+        for (let i = 0; i < 80; i++) {
+            particles.push(new Particle());
         }
 
-        function animateSnow() {
+        function animateParticles() {
             ctx.clearRect(0, 0, width, height);
-            snowflakes.forEach(flake => { flake.update(); flake.draw(); });
-            requestAnimationFrame(animateSnow);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
         }
-        animateSnow();
+        animateParticles();
 
-        // Data Produk Manual (Anda bisa mengubah nama, harga, terjual, dan menambahkan deskripsi per produk di sini)
+        // Data Produk Manual 
         const defaultDeskripsi = ["akun freshbill", "fullgaransi", "akun stong"];
-
         const dataProdukManual = [
             { nama: "Alight Motion 12 Bulan", harga: 1000, terjual: 325, deskripsi: ["tanpa watermark", "akun seller", "garansi 6 bulan"] },
             { nama: "Apple Music", harga: 5000, terjual: 85, deskripsi: ["via invite", "akun pembeli", "garansi 25 hari", "strong account"] },
@@ -273,7 +465,7 @@
             { nama: "Zoom 1 Bulan", harga: 5000, terjual: 79, deskripsi: ["akun seller", "private renew 14 hari", "fullgaransi", "strong account"] }
         ];
 
-        // Fungsi Cerdas Pencari Logo Berdasarkan Nama Web/Domain App
+        // Pencari Logo URL
         const getLogoUrl = (name) => {
             const n = name.toLowerCase();
             let domain = "";
@@ -304,11 +496,9 @@
         };
 
         const products = [];
-        
         dataProdukManual.forEach((item, index) => {
             let duration = "1 Bulan";
             let displayName = item.nama;
-            
             const durationRegex = /\b(\d+\s*(Bulan|Minggu|Hari)|Lifetime)\b/i;
             const match = item.nama.match(durationRegex);
             
@@ -317,31 +507,23 @@
                 displayName = item.nama.replace(durationRegex, '').trim(); 
             }
 
-            const placeholderFallback = `https://placehold.co/400x300/475569/ffffff?text=${encodeURIComponent(displayName)}`;
+            const placeholderFallback = `https://placehold.co/400x300/4f46e5/ffffff?text=${encodeURIComponent(displayName)}&font=montserrat`;
             let finalImageUrl = getLogoUrl(displayName);
             
             const lowerName = displayName.toLowerCase();
-            if (lowerName.includes('zoom')) {
-                finalImageUrl = 'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://zoom.us&size=256';
-            } else if (lowerName.includes('meitu')) {
-                finalImageUrl = 'https://play-lh.googleusercontent.com/pTGi7U5o9Q2uwhkMZO3PEsmYGCix9WVQN3QM-CQsdCU9L2bO2kYt0x1qEzA6-DAvKLbpHID0ed64vvwP-BWx4P4';
-            } else if (lowerName.includes('wink')) {
-                finalImageUrl = 'https://play-lh.googleusercontent.com/cshtf7MBtmCo5hOjigtUOLgpCcx-ZkQ_eisfmSvK0QZBKSG5bp4MEIH9iqdGYWnUK0B1bEc6iQ10p7WVZYVW7A=w1024'; 
-            } else if (lowerName.includes('alight motion')) {
-                finalImageUrl = 'https://img.utdstc.com/icon/c97/f24/c97f2493b3b32c1b3ddec2f11baddee22e4d2e2983c1939bb6107d8e0d036d0b:600';
-            } else if (lowerName.includes('vpn hma')) {
-                finalImageUrl = 'https://static2.hidemyass.com/10004980/web/i/hma-vpn-logo.png';
-            } else if (lowerName.includes('bstation')) {
-                finalImageUrl = 'https://pic.bstarstatic.com/fe-activity/images/YoYvSHUSXE_w600_h600.jpg';
-            }
+            if (lowerName.includes('zoom')) finalImageUrl = 'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://zoom.us&size=256';
+            else if (lowerName.includes('meitu')) finalImageUrl = 'https://play-lh.googleusercontent.com/pTGi7U5o9Q2uwhkMZO3PEsmYGCix9WVQN3QM-CQsdCU9L2bO2kYt0x1qEzA6-DAvKLbpHID0ed64vvwP-BWx4P4';
+            else if (lowerName.includes('wink')) finalImageUrl = 'https://play-lh.googleusercontent.com/cshtf7MBtmCo5hOjigtUOLgpCcx-ZkQ_eisfmSvK0QZBKSG5bp4MEIH9iqdGYWnUK0B1bEc6iQ10p7WVZYVW7A=w1024'; 
+            else if (lowerName.includes('alight motion')) finalImageUrl = 'https://img.utdstc.com/icon/c97/f24/c97f2493b3b32c1b3ddec2f11baddee22e4d2e2983c1939bb6107d8e0d036d0b:600';
+            else if (lowerName.includes('vpn hma')) finalImageUrl = 'https://static2.hidemyass.com/10004980/web/i/hma-vpn-logo.png';
+            else if (lowerName.includes('bstation')) finalImageUrl = 'https://pic.bstarstatic.com/fe-activity/images/YoYvSHUSXE_w600_h600.jpg';
             
-            if (!finalImageUrl) {
-                finalImageUrl = placeholderFallback;
-            }
+            if (!finalImageUrl) finalImageUrl = placeholderFallback;
 
             products.push({ 
                 id: index + 1, 
                 name: displayName, 
+                fullName: item.nama,
                 duration, 
                 price: item.harga, 
                 sold: item.terjual, 
@@ -356,53 +538,107 @@
         };
 
         const grid = document.getElementById('productGrid');
+        
+        // Render Produk dengan Tombol Beli Interaktif
+        const renderProducts = (data) => {
+            grid.innerHTML = '';
+            
+            if(data.length === 0) {
+                document.getElementById('noResultMsg').classList.remove('hidden');
+            } else {
+                document.getElementById('noResultMsg').classList.add('hidden');
+            }
 
-        products.forEach(product => {
-            const listDeskripsiHTML = product.deskripsi.map(poin => 
-                `<li class="flex gap-1.5"><span class="text-indigo-500">-</span> ${poin}</li>`
-            ).join('');
+            data.forEach((product, i) => {
+                const listDeskripsiHTML = product.deskripsi.map(poin => 
+                    `<li class="flex items-start gap-2"><i class="fa-solid fa-check text-emerald-500 text-[10px] mt-1"></i> <span class="capitalize">${poin}</span></li>`
+                ).join('');
 
-            const cardHTML = `
-                <div class="card-hover glass bg-white/60 dark:bg-slate-800/60 border border-white/60 dark:border-slate-700/60 rounded-2xl flex flex-col overflow-hidden shadow-lg hover:shadow-indigo-500/20 dark:hover:shadow-indigo-500/30 transition-all duration-300">
-                    
-                    <div class="w-full h-28 md:h-40 bg-white dark:bg-slate-800/80 relative overflow-hidden group flex items-center justify-center p-4">
-                        <img src="${product.image}" 
-                             onerror="this.onerror=null; this.src='${product.placeholder}';" 
-                             alt="${product.name}" 
-                             class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-md rounded-xl">
-                    </div>
-                    
-                    <div class="p-3 md:p-4 flex flex-col flex-grow">
+                // Teks otomatis WhatsApp
+                const waText = encodeURIComponent(`Halo Admin DKH SHOP, saya mau order:\n\n*${product.fullName}*\nHarga: ${formatRp(product.price)}\n\nApakah stok masih ada?`);
+
+                const delayAOS = (i % 5) * 100;
+
+                const cardHTML = `
+                    <div class="product-item card-hover glass rounded-2xl flex flex-col overflow-hidden relative group" data-name="${product.fullName.toLowerCase()}" data-aos="zoom-in" data-aos-delay="${delayAOS}">
                         
-                        <div class="flex items-start justify-between gap-2 mb-2">
-                            <h3 class="text-sm md:text-lg font-bold text-slate-900 dark:text-white leading-tight">
-                                ${product.name}
-                            </h3>
-                            <span class="shrink-0 px-2 py-1 text-[10px] md:text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 rounded-md border border-indigo-200 dark:border-indigo-700/50 uppercase tracking-wider">
-                                ${product.duration}
-                            </span>
+                        <!-- Badge Terjual Float -->
+                        <div class="absolute top-2 right-2 z-10 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 border border-white/10">
+                            <i class="fa-solid fa-fire text-orange-400"></i> ${product.sold}
+                        </div>
+
+                        <div class="w-full h-32 md:h-40 bg-white/50 dark:bg-slate-900/50 relative overflow-hidden flex items-center justify-center p-6 border-b border-slate-200/50 dark:border-slate-700/50">
+                            <img src="${product.image}" 
+                                 onerror="this.onerror=null; this.src='${product.placeholder}';" 
+                                 alt="${product.name}" 
+                                 class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-125 drop-shadow-lg rounded-xl">
                         </div>
                         
-                        <div class="mb-3 md:mb-4 flex-grow mt-2">
-                            <ul class="text-xs md:text-sm text-slate-700 dark:text-slate-300 space-y-0.5">
-                                ${listDeskripsiHTML}
-                            </ul>
-                        </div>
-                        
-                        <div class="mt-auto pt-2.5 md:pt-3 border-t border-slate-300/50 dark:border-slate-600/50">
-                            <div class="text-base md:text-xl font-extrabold text-indigo-700 dark:text-indigo-400 mb-2">
-                                ${formatRp(product.price)}
+                        <div class="p-4 md:p-5 flex flex-col flex-grow">
+                            <div class="flex flex-col gap-1 mb-3">
+                                <span class="inline-block w-max px-2.5 py-1 text-[10px] md:text-xs font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 rounded-md uppercase tracking-wider">
+                                    ${product.duration}
+                                </span>
+                                <h3 class="text-base md:text-lg font-extrabold text-slate-900 dark:text-white leading-tight">
+                                    ${product.name}
+                                </h3>
                             </div>
                             
-                            <div class="inline-flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-900/50 px-2 py-1 md:px-2.5 md:py-1.5 rounded-md border border-slate-300/50 dark:border-slate-700/50 w-full sm:w-auto">
-                                <i class="fa-solid fa-chart-line text-emerald-500"></i>
-                                Terjual: ${product.sold}
+                            <div class="mb-4 flex-grow">
+                                <ul class="text-xs md:text-sm text-slate-600 dark:text-slate-400 space-y-1 font-medium">
+                                    ${listDeskripsiHTML}
+                                </ul>
+                            </div>
+                            
+                            <div class="mt-auto pt-4 border-t border-slate-200 dark:border-slate-700/50">
+                                <div class="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 mb-4">
+                                    ${formatRp(product.price)}
+                                </div>
+                                
+                                <!-- Tombol Pesan Interaktif -->
+                                <a href="https://wa.me/6285693436052?text=${waText}" target="_blank" class="w-full flex items-center justify-center gap-2 py-2.5 md:py-3 bg-slate-900 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-indigo-500/40">
+                                    <i class="fa-solid fa-cart-shopping"></i> Pesan Sekarang
+                                </a>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-            grid.insertAdjacentHTML('beforeend', cardHTML);
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        };
+
+        // Render awal semua produk
+        renderProducts(products);
+
+        // Fitur Live Search
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', (e) => {
+            const keyword = e.target.value.toLowerCase();
+            const filteredProducts = products.filter(product => 
+                product.fullName.toLowerCase().includes(keyword)
+            );
+            renderProducts(filteredProducts);
+            // Refresh AOS untuk elemen baru
+            setTimeout(() => { AOS.refresh(); }, 100);
+        });
+
+        // Logika Akordeon FAQ
+        const faqBtns = document.querySelectorAll('.faq-btn');
+        faqBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const content = btn.nextElementSibling;
+                const icon = btn.querySelector('.icon-faq');
+                
+                content.classList.toggle('hidden');
+                
+                if(content.classList.contains('hidden')) {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
+            });
         });
     </script>
 </body>
