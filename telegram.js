@@ -1,5 +1,5 @@
 // ============================================
-// TELEGRAM.JS - Modul Telegram Bot
+// TELEGRAM.JS - Modul Telegram Bot (Turso Edition)
 // DKH SHOP MARKET - Notifikasi & Approval
 // ============================================
 
@@ -23,7 +23,6 @@ function formatRupiah(angka) {
 function initBot(token) {
     if (!token || token === 'YOUR_BOT_TOKEN_HERE') {
         console.log('⚠️  Telegram Bot Token belum diisi. Bot tidak aktif.');
-        console.log('   Silakan isi TELEGRAM_BOT_TOKEN di file .env');
         return null;
     }
 
@@ -57,15 +56,14 @@ function initBot(token) {
         });
 
         // Handle pesan teks untuk alasan reject
-        bot.on('message', (msg) => {
+        bot.on('message', async (msg) => {
             const chatId = msg.chat.id;
             const text = msg.text;
 
-            // Cek apakah ada pending reject
             if (pendingRejects[chatId] && text && !text.startsWith('/')) {
                 const orderId = pendingRejects[chatId];
                 delete pendingRejects[chatId];
-                handleReject(chatId, orderId, text);
+                await handleReject(chatId, orderId, text);
             }
         });
 
@@ -82,15 +80,12 @@ const pendingRejects = {};
 
 // Kirim notifikasi order baru ke admin
 async function sendOrderNotification(adminChatId, order, paymentProofPath) {
-    if (!bot || !adminChatId) {
-        console.log('⚠️  Bot tidak aktif, notifikasi tidak dikirim');
-        return;
-    }
+    if (!bot || !adminChatId) return;
 
     try {
         const items = JSON.parse(order.items);
         const itemList = items.map((item, i) =>
-            `  ${i + 1}. ${item.product_name} x${item.qty} = ${formatRupiah(item.subtotal)}`
+            `   ${i + 1}. ${item.product_name} x${item.qty} = ${formatRupiah(item.subtotal)}`
         ).join('\n');
 
         const message = `
@@ -119,7 +114,6 @@ ${itemList}
             ]
         };
 
-        // Kirim foto bukti transfer + pesan
         if (paymentProofPath && fs.existsSync(paymentProofPath)) {
             await bot.sendPhoto(adminChatId, paymentProofPath, {
                 caption: message,
@@ -127,7 +121,6 @@ ${itemList}
                 reply_markup: keyboard
             });
         } else {
-            // Kirim pesan tanpa foto
             await bot.sendMessage(adminChatId, message, {
                 parse_mode: 'Markdown',
                 reply_markup: keyboard
@@ -140,33 +133,32 @@ ${itemList}
     }
 }
 
-// Handle approve order
+// Handle approve order (ASYNCHRONOUS untuk Turso)
 async function handleApprove(chatId, messageId, orderId) {
     const db = getDb();
 
-    const order = db.queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
+    const order = await db.queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
     if (!order) {
-        bot.sendMessage(chatId, '❌ Order tidak ditemukan!');
+        await bot.sendMessage(chatId, '❌ Order tidak ditemukan!');
         return;
     }
 
     if (order.status === 'confirmed') {
-        bot.sendMessage(chatId, '⚠️ Order ini sudah dikonfirmasi sebelumnya.');
+        await bot.sendMessage(chatId, '⚠️ Order ini sudah dikonfirmasi sebelumnya.');
         return;
     }
 
     const now = new Date().toISOString();
 
     // Update status order
-    db.runQuery(`UPDATE orders SET status = 'confirmed', updated_at = ? WHERE id = ?`, [now, orderId]);
+    await db.runQuery(`UPDATE orders SET status = 'confirmed', updated_at = ? WHERE id = ?`, [now, orderId]);
 
     // Update sold count
     const items = JSON.parse(order.items);
     for (const item of items) {
-        db.runQuery('UPDATE products SET sold = sold + ? WHERE id = ?', [item.qty, item.product_id]);
+        await db.runQuery('UPDATE products SET sold = sold + ? WHERE id = ?', [item.qty, item.product_id]);
     }
 
-    // Edit pesan di Telegram
     const successMsg = `
 ✅ *ORDER DIKONFIRMASI*
 
@@ -193,27 +185,22 @@ Waktu: ${new Date().toLocaleString('id-ID')}
 // Handle reject prompt (minta alasan)
 async function handleRejectPrompt(chatId, messageId, orderId) {
     pendingRejects[chatId] = orderId;
-
-    await bot.sendMessage(chatId,
-        `❌ *Tolak Order*\n\nSilakan ketik alasan penolakan untuk order ini:`,
-        { parse_mode: 'Markdown' }
-    );
+    await bot.sendMessage(chatId, `❌ *Tolak Order*\n\nSilakan ketik alasan penolakan untuk order ini:`, { parse_mode: 'Markdown' });
 }
 
-// Handle reject order dengan alasan
+// Handle reject order dengan alasan (ASYNCHRONOUS untuk Turso)
 async function handleReject(chatId, orderId, reason) {
     const db = getDb();
 
-    const order = db.queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
+    const order = await db.queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
     if (!order) {
-        bot.sendMessage(chatId, '❌ Order tidak ditemukan!');
+        await bot.sendMessage(chatId, '❌ Order tidak ditemukan!');
         return;
     }
 
     const now = new Date().toISOString();
 
-    // Update status order
-    db.runQuery(
+    await db.runQuery(
         `UPDATE orders SET status = 'rejected', reject_reason = ?, updated_at = ? WHERE id = ?`,
         [reason, now, orderId]
     );
