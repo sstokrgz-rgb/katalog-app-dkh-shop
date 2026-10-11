@@ -146,7 +146,7 @@
                     <span>Keranjang (<span id="heroCartCount">0</span>)</span>
                 </button>
 
-                <a href="https://wa.me/+6285693436052" class="group w-full sm:w-auto flex flex-1 items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-emerald-400 to-emerald-600 text-white font-bold hover:shadow-lg hover:shadow-emerald-500/40 transition-all" target="_blank">
+                <a href="https://wa.me/6285775488908" class="group w-full sm:w-auto flex flex-1 items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-emerald-400 to-emerald-600 text-white font-bold hover:shadow-lg hover:shadow-emerald-500/40 transition-all" target="_blank">
                     <i class="fa-solid fa-headset text-2xl group-hover:scale-110 transition-transform"></i>
                     <span>Hubungi CS</span>
                 </a>
@@ -239,11 +239,11 @@
                             <i class="fa-brands fa-whatsapp"></i>
                         </div>
                         <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">WhatsApp CS</h3>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">+62 856-9343-6052</p>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">+62 857-7548-8908</p>
                         <p class="text-xs text-slate-400 dark:text-slate-500 mb-4">
                             <i class="fa-solid fa-clock mr-1"></i> Senin - Minggu, 08:00 - 22:00 WIB
                         </p>
-                        <a href="https://wa.me/+6285693436052" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold hover:shadow-lg hover:shadow-emerald-500/40 transition-all">
+                        <a href="https://wa.me/6285775488908" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold hover:shadow-lg hover:shadow-emerald-500/40 transition-all">
                             <i class="fa-brands fa-whatsapp text-xl"></i> Chat Sekarang
                         </a>
                     </div>
@@ -401,7 +401,7 @@
                     </div>
                 </div>
 
-                <!-- Pembayaran QRIS -->
+                <!-- Pembayaran QRIS (Proporsional & Tidak Gepeng) -->
                 <div>
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-3">💳 Pembayaran via QRIS</h3>
                     <div class="text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
@@ -497,7 +497,7 @@
                             <i class="fa-solid fa-lightbulb mr-1"></i> Silakan hubungi CS untuk bantuan atau lakukan pemesanan ulang dengan bukti transfer yang benar.
                         </p>
                     </div>
-                    <a href="https://wa.me/+6285693436052" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all mb-3">
+                    <a href="https://wa.me/6285775488908" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all mb-3">
                         <i class="fa-brands fa-whatsapp text-xl"></i> Hubungi CS
                     </a>
                 </div>
@@ -649,7 +649,6 @@
                 }
             } catch (err) {
                 console.error('Gagal memuat produk:', err);
-                // Fallback: coba lagi setelah 2 detik
                 setTimeout(loadProducts, 2000);
             }
         }
@@ -719,7 +718,6 @@
         function buyNow(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
-            // Set cart ke 1 item ini saja, lalu checkout
             cart = [{ product_id: productId, qty: 1 }];
             saveCart();
             updateCartUI();
@@ -839,7 +837,6 @@
             }
             closeCartSidebar();
 
-            // Render checkout items
             const checkoutItems = document.getElementById('checkoutItems');
             checkoutItems.innerHTML = cart.map(item => {
                 const product = products.find(p => p.id === item.product_id);
@@ -854,13 +851,11 @@
 
             document.getElementById('checkoutTotal').textContent = formatRp(getCartTotal());
 
-            // Reset form
             document.getElementById('custName').value = '';
             document.getElementById('custPhone').value = '';
             document.getElementById('custEmail').value = '';
             clearProof();
 
-            // Show checkout, hide success
             document.getElementById('checkoutContent').classList.remove('hidden');
             document.getElementById('checkoutSuccess').classList.add('hidden');
 
@@ -914,13 +909,9 @@
             currentPollingOrderId = orderId;
             currentPollingOrderNumber = orderNumber;
 
-            // Simpan order aktif ke localStorage
             localStorage.setItem('dkh_active_order', JSON.stringify({ id: orderId, number: orderNumber }));
-
-            // Tampilkan status pending di modal
             showStatusView('pending');
 
-            // Polling setiap 5 detik
             pollOrderStatus();
             statusPollingInterval = setInterval(pollOrderStatus, 5000);
         }
@@ -959,7 +950,6 @@
                     showFloatingBanner('rejected', currentPollingOrderNumber || json.data.order_number, reason);
                     showToast('Pesanan kamu ditolak. Cek alasannya!', 'error');
                 }
-                // pending_payment dan pending_verification tetap polling
             } catch (err) {
                 console.error('Polling error:', err);
             }
@@ -1014,7 +1004,7 @@
                         <div class="min-w-0">
                             <p class="text-sm font-bold text-red-600 dark:text-red-400">Order ${orderNumber} Ditolak ❌</p>
                             <p class="text-xs text-red-500 dark:text-red-400 mt-0.5"><strong>Alasan:</strong> ${rejectReason || '-'}</p>
-                            <a href="https://wa.me/+6285693436052" target="_blank" class="inline-flex items-center gap-1 text-xs text-emerald-500 font-semibold mt-1 hover:underline">
+                            <a href="https://wa.me/6285775488908" target="_blank" class="inline-flex items-center gap-1 text-xs text-emerald-500 font-semibold mt-1 hover:underline">
                                 <i class="fa-brands fa-whatsapp"></i> Hubungi CS
                             </a>
                         </div>
@@ -1044,7 +1034,6 @@
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Memproses...';
 
             try {
-                // 1. Buat order
                 const orderRes = await fetch('/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1062,7 +1051,6 @@
                     return;
                 }
 
-                // 2. Upload bukti transfer
                 const formData = new FormData();
                 formData.append('payment_proof', proofFile);
 
@@ -1077,15 +1065,12 @@
                     return;
                 }
 
-                // 3. Tampilkan success view + mulai polling
                 document.getElementById('successOrderNumber').textContent = orderJson.data.order_number;
                 document.getElementById('checkoutContent').classList.add('hidden');
                 document.getElementById('checkoutSuccess').classList.remove('hidden');
 
-                // Mulai polling status otomatis
                 startStatusPolling(orderJson.data.id, orderJson.data.order_number);
 
-                // Clear cart
                 cart = [];
                 saveCart();
                 updateCartUI();
@@ -1144,7 +1129,7 @@
                             <p class="text-xs font-bold text-red-700 dark:text-red-400 mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Alasan Penolakan:</p>
                             <p class="text-sm text-red-600 dark:text-red-300 font-medium">${json.data.reject_reason}</p>
                         </div>
-                        <a href="https://wa.me/+6285693436052" target="_blank" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition">
+                        <a href="https://wa.me/6285775488908" target="_blank" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition">
                             <i class="fa-brands fa-whatsapp"></i> Hubungi CS
                         </a>
                     `;
@@ -1203,14 +1188,12 @@
         loadProducts();
         updateCartUI();
 
-        // Resume polling jika ada order aktif (misal setelah refresh halaman)
         (function resumeActiveOrder() {
             const saved = localStorage.getItem('dkh_active_order');
             if (saved) {
                 try {
                     const { id, number } = JSON.parse(saved);
                     if (id && number) {
-                        // Tampilkan floating banner bahwa ada order aktif
                         const el = document.getElementById('floatingStatus');
                         const content = document.getElementById('floatingStatusContent');
                         el.classList.remove('hidden');
@@ -1228,13 +1211,12 @@
                         `;
                         el.style.cursor = 'pointer';
                         el.onclick = (e) => {
-                            if (e.target.closest('button')) return; // ignore dismiss
+                            if (e.target.closest('button')) return;
                             document.getElementById('trackOrderInput').value = number;
                             showTrackingModal();
                             trackOrder();
                         };
 
-                        // Mulai background polling
                         currentPollingOrderId = id;
                         currentPollingOrderNumber = number;
                         statusPollingInterval = setInterval(async () => {
