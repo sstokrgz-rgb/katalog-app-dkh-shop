@@ -10,6 +10,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const cloudinary = require('cloudinary').v2;
 const { initDatabase, getDb } = require('./database');
 const { initBot, sendOrderNotification } = require('./telegram');
 
@@ -20,6 +21,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Konfigurasi Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 const uploadsDir = '/tmp';
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -28,13 +36,8 @@ if (!fs.existsSync(uploadsDir)) {
 app.use('/uploads', express.static(uploadsDir));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadsDir),
-    filename: (req, file, cb) => {
-        const uniqueName = `proof_${Date.now()}_${Math.random().toString(36).substring(7)}${path.extname(file.originalname)}`;
-        cb(null, uniqueName);
-    }
-});
+// Multer menggunakan memoryStorage agar bisa langsung dilempar ke Cloudinary
+const storage = multer.memoryStorage();
 
 const upload = multer({
     storage,
@@ -153,6 +156,7 @@ app.get('/api/orders/:id/status', async (req, res) => {
     }
 });
 
+// Upload bukti transfer langsung ke Cloudinary
 app.post('/api/orders/:id/upload-proof', upload.single('payment_proof'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ success: false, message: 'File wajib diupload!' });
@@ -160,19 +164,44 @@ app.post('/api/orders/:id/upload-proof', upload.single('payment_proof'), async (
         const db = getDb();
         const order = await db.queryOne('SELECT * FROM orders WHERE id = ?', [req.params.id]);
         if (!order) {
-            fs.unlinkSync(req.file.path);
             return res.status(404).json({ success: false, message: 'Order tidak ditemukan' });
         }
 
-        const proofPath = `/uploads/${req.file.filename}`;
-        await db.runQuery(`UPDATE orders SET payment_proof = ?, status = 'pending_verification', updated_at = ? WHERE id = ?`, [proofPath, new Date().toISOString(), req.params.id]);
+        // Upload buffer ke Cloudinary menggunakan stream
+        const uploadToCloudinary = (buffer) => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder: 'dkh_payment_proofs' },
+                    (error, result) => {
+                        if (result) resolve(result);
+                        else reject(error);
+                    }
+                );
+                stream.end(buffer);
+            });
+        };
+
+        const cloudinaryResult = await uploadToCloudinary(req.file.buffer);
+        const proofUrl = cloudinaryResult.secure_url;
+
+        await db.runQuery(`UPDATE orders SET payment_proof = ?, status = 'pending_verification', updated_at = ? WHERE id = ?`, [proofUrl, new Date().toISOString(), req.params.id]);
 
         const updatedOrder = await db.queryOne('SELECT * FROM orders WHERE id = ?', [req.params.id]);
-        await sendOrderNotification(process.env.TELEGRAM_ADMIN_CHAT_ID, updatedOrder, path.join(uploadsDir, req.file.filename));
+        
+        // Simpan file sementara secara lokal khusus untuk dikirim sebagai foto ke Telegram jika diperlukan
+        const tempLocalPath = path.join(uploadsDir, `proof_${Date.now()}${path.extname(req.file.originalname)}`);
+        fs.writeFileSync(tempLocalPath, req.file.buffer);
+        
+        await sendOrderNotification(process.env.TELEGRAM_ADMIN_CHAT_ID, updatedOrder, tempLocalPath);
+        
+        if (fs.existsSync(tempLocalPath)) {
+            fs.unlinkSync(tempLocalPath);
+        }
 
-        res.json({ success: true, data: { payment_proof: proofPath }, message: 'Bukti berhasil diupload!' });
+        res.json({ success: true, data: { payment_proof: proofUrl }, message: 'Bukti berhasil diupload!' });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Gagal upload' });
+        console.error('Upload Error:', err);
+        res.status(500).json({ success: false, message: 'Gagal upload bukti pembayaran ke cloud' });
     }
 });
 
@@ -226,7 +255,9 @@ app.get('*', (req, res) => {
 async function startServer() {
     try {
         await initDatabase();
-        initBot(process.env.TELEGRAM_BOT_TOKEN);
+        if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+            initBot(process.env.TELEGRAM_BOT_TOKEN);
+        }
         app.listen(PORT, () => {
             console.log(`🌐 Server Berjalan di port ${PORT}`);
         });
