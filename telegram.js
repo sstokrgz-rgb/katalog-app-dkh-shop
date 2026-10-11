@@ -133,11 +133,12 @@ ${itemList}
     }
 }
 
-// Handle approve order (ASYNCHRONOUS untuk Turso)
+// Handle approve order (Mendukung pencarian via ID atau Order Number)
 async function handleApprove(chatId, messageId, orderId) {
     const db = getDb();
 
-    const order = await db.queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
+    // Cari berdasarkan ID atau Order Number untuk mencegah error "tidak ditemukan"
+    let order = await db.queryOne('SELECT * FROM orders WHERE id = ? OR order_number = ?', [orderId, orderId]);
     if (!order) {
         await bot.sendMessage(chatId, '❌ Order tidak ditemukan!');
         return;
@@ -150,10 +151,10 @@ async function handleApprove(chatId, messageId, orderId) {
 
     const now = new Date().toISOString();
 
-    // Update status order
-    await db.runQuery(`UPDATE orders SET status = 'confirmed', updated_at = ? WHERE id = ?`, [now, orderId]);
+    // Update status order menggunakan ID asli dari database
+    await db.runQuery(`UPDATE orders SET status = 'confirmed', updated_at = ? WHERE id = ?`, [now, order.id]);
 
-    // Update sold count
+    // Update sold count produk
     const items = JSON.parse(order.items);
     for (const item of items) {
         await db.runQuery('UPDATE products SET sold = sold + ? WHERE id = ?', [item.qty, item.product_id]);
@@ -182,17 +183,11 @@ Waktu: ${new Date().toLocaleString('id-ID')}
     }
 }
 
-// Handle reject prompt (minta alasan)
-async function handleRejectPrompt(chatId, messageId, orderId) {
-    pendingRejects[chatId] = orderId;
-    await bot.sendMessage(chatId, `❌ *Tolak Order*\n\nSilakan ketik alasan penolakan untuk order ini:`, { parse_mode: 'Markdown' });
-}
-
-// Handle reject order dengan alasan (ASYNCHRONOUS untuk Turso)
+// Handle reject order dengan alasan (Mendukung pencarian via ID atau Order Number)
 async function handleReject(chatId, orderId, reason) {
     const db = getDb();
 
-    const order = await db.queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
+    let order = await db.queryOne('SELECT * FROM orders WHERE id = ? OR order_number = ?', [orderId, orderId]);
     if (!order) {
         await bot.sendMessage(chatId, '❌ Order tidak ditemukan!');
         return;
@@ -202,7 +197,7 @@ async function handleReject(chatId, orderId, reason) {
 
     await db.runQuery(
         `UPDATE orders SET status = 'rejected', reject_reason = ?, updated_at = ? WHERE id = ?`,
-        [reason, now, orderId]
+        [reason, now, order.id]
     );
 
     const rejectMsg = `
