@@ -1,32 +1,25 @@
 // ============================================
-// DATABASE.JS - Modul Database SQLite (sql.js)
+// DATABASE.JS - Modul Database Turso (LibSQL)
 // DKH SHOP MARKET - Marketplace Digital
-// Pure JavaScript, tanpa native bindings
 // ============================================
 
-const initSqlJs = require('sql.js');
-const path = require('path');
-const fs = require('fs');
+const { createClient } = require('@libsql/client');
 
-const DB_PATH = path.join(__dirname, 'dkh_shop.db');
+let client = null;
 
-let db = null;
-let dbReady = null; // Promise untuk inisialisasi async
-
-// Inisialisasi database (async karena sql.js perlu load WASM)
 async function initDatabase() {
-    const SQL = await initSqlJs();
-
-    // Load existing database atau buat baru
-    if (fs.existsSync(DB_PATH)) {
-        const fileBuffer = fs.readFileSync(DB_PATH);
-        db = new SQL.Database(fileBuffer);
-    } else {
-        db = new SQL.Database();
+    if (!process.env.TURSO_URL || !process.env.TURSO_AUTH_TOKEN) {
+        throw new Error("❌ TURSO_URL atau TURSO_AUTH_TOKEN belum diatur di .env!");
     }
 
-    // Buat tabel
-    db.run(`
+    // Koneksi ke Turso
+    client = createClient({
+        url: process.env.TURSO_URL,
+        authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+
+    // Buat tabel products
+    await client.execute(`
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -42,7 +35,8 @@ async function initDatabase() {
         )
     `);
 
-    db.run(`
+    // Buat tabel orders
+    await client.execute(`
         CREATE TABLE IF NOT EXISTS orders (
             id TEXT PRIMARY KEY,
             order_number TEXT UNIQUE NOT NULL,
@@ -60,57 +54,38 @@ async function initDatabase() {
     `);
 
     // Seed produk jika tabel kosong
-    const result = db.exec('SELECT COUNT(*) as cnt FROM products');
-    const count = result[0].values[0][0];
-    if (count === 0) {
-        seedProducts();
+    const result = await client.execute('SELECT COUNT(*) as cnt FROM products');
+    const count = result.rows[0].cnt !== undefined ? result.rows[0].cnt : result.rows[0][0];
+    
+    if (Number(count) === 0) {
+        await seedProducts();
     }
 
-    saveDatabase();
-    console.log('✅ Database terkoneksi');
-    return db;
+    console.log('✅ Database Turso terkoneksi');
+    return client;
 }
 
-// Simpan database ke disk
-function saveDatabase() {
-    if (!db) return;
-    const data = db.export();
-    const buffer = Buffer.from(data);
-    fs.writeFileSync(DB_PATH, buffer);
+// Helper: jalankan query (ASYNCHRONOUS untuk Turso)
+async function queryAll(sql, params = []) {
+    const result = await client.execute({ sql, args: params });
+    return result.rows;
 }
 
-// Helper: jalankan query dan return array of objects
-function queryAll(sql, params = []) {
-    const stmt = db.prepare(sql);
-    stmt.bind(params);
-    const results = [];
-    while (stmt.step()) {
-        results.push(stmt.getAsObject());
-    }
-    stmt.free();
-    return results;
+async function queryOne(sql, params = []) {
+    const result = await client.execute({ sql, args: params });
+    return result.rows.length > 0 ? result.rows[0] : null;
 }
 
-// Helper: jalankan query dan return 1 object
-function queryOne(sql, params = []) {
-    const results = queryAll(sql, params);
-    return results.length > 0 ? results[0] : null;
+async function runQuery(sql, params = []) {
+    await client.execute({ sql, args: params });
 }
 
-// Helper: jalankan statement tanpa return
-function runQuery(sql, params = []) {
-    db.run(sql, params);
-    saveDatabase(); // Auto-save setelah setiap perubahan
-}
-
-// Mendapatkan instance database (pastikan sudah ready)
 function getDb() {
-    if (!db) throw new Error('Database belum diinisialisasi! Panggil initDatabase() dulu.');
-    return { queryAll, queryOne, runQuery, raw: db };
+    if (!client) throw new Error('Database belum diinisialisasi!');
+    return { queryAll, queryOne, runQuery, raw: client };
 }
 
-// Data produk dari website asli
-function seedProducts() {
+async function seedProducts() {
     const dataProduk = [
         { nama: "Alight Motion 12 Bulan", harga: 1000, terjual: 325, deskripsi: ["tanpa watermark", "akun seller", "garansi 6 bulan"] },
         { nama: "Apple Music", harga: 5000, terjual: 85, deskripsi: ["via invite", "akun pembeli", "garansi 25 hari", "strong account"] },
@@ -186,15 +161,12 @@ function seedProducts() {
         const duration = extractDuration(item.nama);
         const imageUrl = getLogoUrl(item.nama) || `https://placehold.co/400x300/4f46e5/ffffff?text=${encodeURIComponent(name)}&font=montserrat`;
 
-        db.run(
-            `INSERT INTO products (name, full_name, duration, price, sold, description, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [name, item.nama, duration, item.harga, item.terjual, JSON.stringify(item.deskripsi), imageUrl]
-        );
+        await client.execute({
+            sql: `INSERT INTO products (name, full_name, duration, price, sold, description, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            args: [name, item.nama, duration, item.harga, item.terjual, JSON.stringify(item.deskripsi), imageUrl]
+        });
     }
-
-    saveDatabase();
-    console.log(`✅ Database di-seed dengan ${dataProduk.length} produk`);
+    console.log(`✅ Database Turso di-seed dengan ${dataProduk.length} produk`);
 }
 
-// Export
 module.exports = { initDatabase, getDb };
