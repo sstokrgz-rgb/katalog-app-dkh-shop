@@ -33,7 +33,7 @@ function initBot(token) {
             console.error('❌ Telegram polling error:', error.message);
         });
 
-        // Handle callback query (tombol approve/reject menggunakan order_number)
+        // Handle callback query (tombol approve/reject)
         bot.on('callback_query', async (callbackQuery) => {
             const chatId = callbackQuery.message.chat.id;
             const data = callbackQuery.data;
@@ -41,11 +41,11 @@ function initBot(token) {
 
             try {
                 if (data.startsWith('approve_')) {
-                    const orderNumber = data.replace('approve_', '');
-                    await handleApprove(chatId, messageId, orderNumber);
+                    const orderId = data.replace('approve_', '');
+                    await handleApprove(chatId, messageId, orderId);
                 } else if (data.startsWith('reject_')) {
-                    const orderNumber = data.replace('reject_', '');
-                    await handleRejectPrompt(chatId, messageId, orderNumber);
+                    const orderId = data.replace('reject_', '');
+                    await handleRejectPrompt(chatId, messageId, orderId);
                 }
 
                 bot.answerCallbackQuery(callbackQuery.id);
@@ -61,9 +61,9 @@ function initBot(token) {
             const text = msg.text;
 
             if (pendingRejects[chatId] && text && !text.startsWith('/')) {
-                const orderNumber = pendingRejects[chatId];
+                const orderId = pendingRejects[chatId];
                 delete pendingRejects[chatId];
-                await handleReject(chatId, orderNumber, text);
+                await handleReject(chatId, orderId, text);
             }
         });
 
@@ -105,12 +105,11 @@ ${itemList}
 📸 *Bukti Transfer:* Terlampir di bawah
         `.trim();
 
-        // Tombol menggunakan order_number agar langsung cocok dengan database
         const keyboard = {
             inline_keyboard: [
                 [
-                    { text: '✅ APPROVE', callback_data: `approve_${order.order_number}` },
-                    { text: '❌ REJECT', callback_data: `reject_${order.order_number}` }
+                    { text: '✅ APPROVE', callback_data: `approve_${order.id}` },
+                    { text: '❌ REJECT', callback_data: `reject_${order.id}` }
                 ]
             ]
         };
@@ -134,18 +133,13 @@ ${itemList}
     }
 }
 
-// Handle approve order berdasarkan order_number via raw Turso execute
-async function handleApprove(chatId, messageId, orderNumber) {
+// Handle approve order (ASYNCHRONOUS untuk Turso)
+async function handleApprove(chatId, messageId, orderId) {
     const db = getDb();
 
-    const result = await db.raw.execute({
-        sql: 'SELECT * FROM orders WHERE order_number = ?',
-        args: [orderNumber]
-    });
-
-    const order = result.rows.length > 0 ? result.rows[0] : null;
+    const order = await db.queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
     if (!order) {
-        await bot.sendMessage(chatId, `❌ Order ${orderNumber} tidak ditemukan di database!`);
+        await bot.sendMessage(chatId, '❌ Order tidak ditemukan!');
         return;
     }
 
@@ -156,19 +150,13 @@ async function handleApprove(chatId, messageId, orderNumber) {
 
     const now = new Date().toISOString();
 
-    // Update status order berdasarkan id unik asli
-    await db.raw.execute({
-        sql: `UPDATE orders SET status = 'confirmed', updated_at = ? WHERE id = ?`,
-        args: [now, order.id]
-    });
+    // Update status order
+    await db.runQuery(`UPDATE orders SET status = 'confirmed', updated_at = ? WHERE id = ?`, [now, orderId]);
 
-    // Update jumlah terjual produk
+    // Update sold count
     const items = JSON.parse(order.items);
     for (const item of items) {
-        await db.raw.execute({
-            sql: 'UPDATE products SET sold = sold + ? WHERE id = ?',
-            args: [item.qty, item.product_id]
-        });
+        await db.runQuery('UPDATE products SET sold = sold + ? WHERE id = ?', [item.qty, item.product_id]);
     }
 
     const successMsg = `
@@ -195,32 +183,27 @@ Waktu: ${new Date().toLocaleString('id-ID')}
 }
 
 // Handle reject prompt (minta alasan)
-async function handleRejectPrompt(chatId, messageId, orderNumber) {
-    pendingRejects[chatId] = orderNumber;
-    await bot.sendMessage(chatId, `❌ *Tolak Order (${orderNumber})*\n\nSilakan ketik alasan penolakan untuk order ini:`, { parse_mode: 'Markdown' });
+async function handleRejectPrompt(chatId, messageId, orderId) {
+    pendingRejects[chatId] = orderId;
+    await bot.sendMessage(chatId, `❌ *Tolak Order*\n\nSilakan ketik alasan penolakan untuk order ini:`, { parse_mode: 'Markdown' });
 }
 
-// Handle reject order dengan alasan berdasarkan order_number via raw Turso execute
-async function handleReject(chatId, orderNumber, reason) {
+// Handle reject order dengan alasan (ASYNCHRONOUS untuk Turso)
+async function handleReject(chatId, orderId, reason) {
     const db = getDb();
 
-    const result = await db.raw.execute({
-        sql: 'SELECT * FROM orders WHERE order_number = ?',
-        args: [orderNumber]
-    });
-
-    const order = result.rows.length > 0 ? result.rows[0] : null;
+    const order = await db.queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
     if (!order) {
-        await bot.sendMessage(chatId, `❌ Order ${orderNumber} tidak ditemukan di database!`);
+        await bot.sendMessage(chatId, '❌ Order tidak ditemukan!');
         return;
     }
 
     const now = new Date().toISOString();
 
-    await db.raw.execute({
-        sql: `UPDATE orders SET status = 'rejected', reject_reason = ?, updated_at = ? WHERE id = ?`,
-        args: [reason, now, order.id]
-    });
+    await db.runQuery(
+        `UPDATE orders SET status = 'rejected', reject_reason = ?, updated_at = ? WHERE id = ?`,
+        [reason, now, orderId]
+    );
 
     const rejectMsg = `
 ❌ *ORDER DITOLAK*
