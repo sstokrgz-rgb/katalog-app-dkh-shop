@@ -134,13 +134,18 @@ ${itemList}
     }
 }
 
-// Handle approve order berdasarkan order_number
+// Handle approve order berdasarkan order_number via raw Turso execute
 async function handleApprove(chatId, messageId, orderNumber) {
     const db = getDb();
 
-    let order = await db.queryOne('SELECT * FROM orders WHERE order_number = ?', [orderNumber]);
+    const result = await db.raw.execute({
+        sql: 'SELECT * FROM orders WHERE order_number = ?',
+        args: [orderNumber]
+    });
+
+    const order = result.rows.length > 0 ? result.rows[0] : null;
     if (!order) {
-        await bot.sendMessage(chatId, `❌ Order ${orderNumber} tidak ditemukan!`);
+        await bot.sendMessage(chatId, `❌ Order ${orderNumber} tidak ditemukan di database!`);
         return;
     }
 
@@ -152,12 +157,18 @@ async function handleApprove(chatId, messageId, orderNumber) {
     const now = new Date().toISOString();
 
     // Update status order berdasarkan id unik asli
-    await db.runQuery(`UPDATE orders SET status = 'confirmed', updated_at = ? WHERE id = ?`, [now, order.id]);
+    await db.raw.execute({
+        sql: `UPDATE orders SET status = 'confirmed', updated_at = ? WHERE id = ?`,
+        args: [now, order.id]
+    });
 
     // Update jumlah terjual produk
     const items = JSON.parse(order.items);
     for (const item of items) {
-        await db.runQuery('UPDATE products SET sold = sold + ? WHERE id = ?', [item.qty, item.product_id]);
+        await db.raw.execute({
+            sql: 'UPDATE products SET sold = sold + ? WHERE id = ?',
+            args: [item.qty, item.product_id]
+        });
     }
 
     const successMsg = `
@@ -189,22 +200,27 @@ async function handleRejectPrompt(chatId, messageId, orderNumber) {
     await bot.sendMessage(chatId, `❌ *Tolak Order (${orderNumber})*\n\nSilakan ketik alasan penolakan untuk order ini:`, { parse_mode: 'Markdown' });
 }
 
-// Handle reject order dengan alasan berdasarkan order_number
+// Handle reject order dengan alasan berdasarkan order_number via raw Turso execute
 async function handleReject(chatId, orderNumber, reason) {
     const db = getDb();
 
-    let order = await db.queryOne('SELECT * FROM orders WHERE order_number = ?', [orderNumber]);
+    const result = await db.raw.execute({
+        sql: 'SELECT * FROM orders WHERE order_number = ?',
+        args: [orderNumber]
+    });
+
+    const order = result.rows.length > 0 ? result.rows[0] : null;
     if (!order) {
-        await bot.sendMessage(chatId, `❌ Order ${orderNumber} tidak ditemukan!`);
+        await bot.sendMessage(chatId, `❌ Order ${orderNumber} tidak ditemukan di database!`);
         return;
     }
 
     const now = new Date().toISOString();
 
-    await db.runQuery(
-        `UPDATE orders SET status = 'rejected', reject_reason = ?, updated_at = ? WHERE id = ?`,
-        [reason, now, order.id]
-    );
+    await db.raw.execute({
+        sql: `UPDATE orders SET status = 'rejected', reject_reason = ?, updated_at = ? WHERE id = ?`,
+        args: [reason, now, order.id]
+    });
 
     const rejectMsg = `
 ❌ *ORDER DITOLAK*
