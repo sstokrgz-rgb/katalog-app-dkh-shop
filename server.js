@@ -21,13 +21,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Buat folder uploads jika belum ada
-const uploadsDir = path.join(__dirname, 'uploads');
+// Gunakan folder /tmp karena Vercel bersifat Read-Only
+const uploadsDir = '/tmp';
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Serve static files
+// Serve static files (mengarah ke /tmp)
 app.use('/uploads', express.static(uploadsDir));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -266,9 +266,9 @@ app.post('/api/orders/:id/upload-proof', upload.single('payment_proof'), async (
             [proofPath, now, req.params.id]
         );
 
-        // Kirim notifikasi ke Telegram
+        // Kirim notifikasi ke Telegram (Update ke folder /tmp)
         const updatedOrder = db.queryOne('SELECT * FROM orders WHERE id = ?', [req.params.id]);
-        const fullImagePath = path.join(__dirname, 'uploads', req.file.filename);
+        const fullImagePath = path.join(uploadsDir, req.file.filename);
 
         await sendOrderNotification(
             process.env.TELEGRAM_ADMIN_CHAT_ID,
@@ -396,7 +396,7 @@ async function startServer() {
         app.listen(PORT, () => {
             console.log('');
             console.log('╔══════════════════════════════════════════╗');
-            console.log('║     🛒 DKH SHOP MARKET - Server         ║');
+            console.log('║    🛒 DKH SHOP MARKET - Server           ║');
             console.log('╠══════════════════════════════════════════╣');
             console.log(`║  🌐 http://localhost:${PORT}               ║`);
             console.log(`║  📊 Admin: http://localhost:${PORT}/admin.html  ║`);
@@ -410,3 +410,6 @@ async function startServer() {
 }
 
 startServer();
+
+// ===== EXPORT UNTUK VERCEL =====
+module.exports = app;
