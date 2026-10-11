@@ -53,9 +53,10 @@ async function initDatabase() {
         )
     `);
 
-    // Seed produk jika tabel kosong
+    // Seed produk jika tabel kosong (diperbaiki agar lebih aman membaca hasil Turso)
     const result = await client.execute('SELECT COUNT(*) as cnt FROM products');
-    const count = result.rows[0].cnt !== undefined ? result.rows[0].cnt : result.rows[0][0];
+    const row = result.rows[0];
+    const count = row ? (row.cnt !== undefined ? row.cnt : Object.values(row)[0]) : 0;
     
     if (Number(count) === 0) {
         await seedProducts();
@@ -115,7 +116,7 @@ async function seedProducts() {
         { nama: "WeTV Private", harga: 30000, terjual: 290, deskripsi: ["akun seller", "bisa login 6 dev", "garansi 25 hari", "strong account"] },
         { nama: "Wink 1 Minggu", harga: 8000, terjual: 29, deskripsi: ["akun seller", "private", "garansi 25 hari", "strong account"] },
         { nama: "YT Prem Invite", harga: 5000, terjual: 1376, deskripsi: ["via invite", "akun pembeli", "garansi 20 hari", "strong account"] },
-        { nama: "Zoom 14 Hari", harga: 4000, terjual: 87, deskripsi: ["akun seller", "private", "garansi 7 hari", "strong account"] },
+        { nama: "Zoom 1 Hari", harga: 4000, terjual: 87, deskripsi: ["akun seller", "private", "garansi 7 hari", "strong account"] },
         { nama: "Zoom 1 Bulan", harga: 5000, terjual: 79, deskripsi: ["akun seller", "private renew 14 hari", "fullgaransi", "strong account"] }
     ];
 
