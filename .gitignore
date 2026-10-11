@@ -1,0 +1,4 @@
+node_modules/
+uploads/
+dkh_shop.db
+.env
